@@ -7,16 +7,19 @@
 #include <iostream>
 #include <string>
 
-#include "Game.hpp"
+#include "GameApp.hpp"
 
 int main() {
     std::cout << "TurnBaseAdventure v" << GAME_VERSION << std::endl;
-    std::cout << "Starting game..." << std::endl;
 
-    Game game;
-    game.init();
-    game.run();
+    GameApp app;
+    if (!app.init()) {
+        std::cerr << "Fatal: GameApp::init() failed." << std::endl;
+        return 1;
+    }
 
-    std::cout << "Game finished. Goodbye!" << std::endl;
+    app.run();
+    app.shutdown();
+
     return 0;
 }
