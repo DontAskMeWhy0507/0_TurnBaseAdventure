@@ -28,6 +28,16 @@ else()
     target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic)
 endif()
 
-# Optional: Tests (uncomment when adding test framework)
-# enable_testing()
-# add_subdirectory(tests)
+# Optional: Tests (manual test executable)
+add_executable(test_oop
+    tests/test_oop.cpp
+    ${SOURCES}
+)
+
+target_include_directories(test_oop PRIVATE include)
+
+if(MSVC)
+    target_compile_options(test_oop PRIVATE /W4)
+else()
+    target_compile_options(test_oop PRIVATE -Wall -Wextra -pedantic)
+endif()

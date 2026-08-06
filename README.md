@@ -53,6 +53,13 @@ cmake --build build --config Debug
 .\build\Debug\TurnBaseAdventure  # Windows (MSVC)
 ```
 
+## Test
+
+```bash
+./build/test_oop               # Linux/macOS
+.\build\Debug\test_oop.exe   # Windows (MSVC)
+```
+
 ## Development Status
 
 - [x] Project skeleton & build system
