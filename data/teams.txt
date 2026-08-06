@@ -1,0 +1,4 @@
+201|Red Team|101,103
+202|Blue Team|102,104
+203|Empty Reserve Team|
+204|Malformed team should be skipped
