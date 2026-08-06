@@ -28,6 +28,14 @@ else()
     target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic)
 endif()
 
-# Optional: Tests (uncomment when adding test framework)
-# enable_testing()
-# add_subdirectory(tests)
+# Team module tests (Hoang Tung Duong) — plain assert-style harness, no
+# external framework required.
+enable_testing()
+add_executable(team_tests
+    tests/team_tests.cpp
+    src/Team.cpp
+    src/TeamManager.cpp
+    src/TeamPersistence.cpp
+)
+target_include_directories(team_tests PRIVATE include)
+add_test(NAME team_tests COMMAND team_tests)
