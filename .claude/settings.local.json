@@ -17,7 +17,10 @@
       "Bash(where make *)",
       "Bash(/c/msys64/usr/bin/pacman -S --noconfirm mingw-w64-ucrt-x86_64-make mingw-w64-ucrt-x86_64-cmake)",
       "Bash(/c/msys64/usr/bin/pacman -S --noconfirm mingw-w64-ucrt-x86_64-make)",
-      "Bash(./build/TurnBaseAdventure.exe)"
+      "Bash(./build/TurnBaseAdventure.exe)",
+      "Bash(cmake --build build --target team_tests)",
+      "Bash(./build/team_tests.exe)",
+      "Bash(cmake --build build)"
     ]
   }
 }

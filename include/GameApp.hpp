@@ -2,6 +2,7 @@
 #define TURN_BASE_ADVENTURE_GAME_APP_HPP
 
 #include "MenuController.hpp"
+#include "TeamManager.hpp"
 
 constexpr const char* GAME_VERSION = "0.1.0";
 
@@ -34,6 +35,7 @@ public:
 
 private:
     bool            m_running;
+    TeamManager     m_teamManager;
     MenuController  m_menu;
 };
 
