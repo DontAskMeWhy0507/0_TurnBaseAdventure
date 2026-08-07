@@ -28,6 +28,18 @@ else()
     target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic)
 endif()
 
+# Test executable for BattleEngine
+add_executable(test_battle_engine
+    tests/test_battle_engine.cpp
+    ${SOURCES}
+)
+target_include_directories(test_battle_engine PRIVATE include)
+if(MSVC)
+    target_compile_options(test_battle_engine PRIVATE /W4)
+else()
+    target_compile_options(test_battle_engine PRIVATE -Wall -Wextra -pedantic)
+endif()
+
 # Team module tests (Hoang Tung Duong) — plain assert-style harness, no
 # external framework required.
 enable_testing()
