@@ -42,7 +42,13 @@ public:
         }
     }
 
+    // Virtual display helper for polymorphic status printing
+    virtual std::string getStatsString() const {
+        return "HP: " + std::to_string(m_currentHp) + "/" + std::to_string(m_maxHp);
+    }
+
     // Getters & Status
+
     int getId() const { return m_id; }
     std::string getName() const { return m_name; }
     int getMaxHp() const { return m_maxHp; }
@@ -91,7 +97,13 @@ public:
     int getManaCost() const { return m_manaCost; }
     int getFallbackDamage() const { return m_fallbackDamage; }
 
+    std::string getStatsString() const override {
+        return "HP: " + std::to_string(m_currentHp) + "/" + std::to_string(m_maxHp)
+             + ", Mana: " + std::to_string(m_currentMana) + "/" + std::to_string(m_maxMana);
+    }
+
     void resetHpMana() override {
+
         Character::resetHpMana();
         m_currentMana = m_maxMana;
     }

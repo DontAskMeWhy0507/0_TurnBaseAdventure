@@ -175,9 +175,15 @@ bool BattleEngine::executeTurn(Character* actor, Character* target) {
         return false;
     }
 
-    // Execute polymorphic action (TC-09, TC-10, TC-11)
+    // =========================================================================
+    // POLYMORPHISM INTEGRATION POINT (FR-04)
+    // Calls virtual function performAction() via abstract base pointer 'actor'.
+    // Runtime dynamic dispatch decides whether Warrior::performAction or Mage::performAction runs.
+    // Absolutely NO if/switch statements are used based on character type!
+    // =========================================================================
     std::cout << "\n--- TURN EXECUTION ---\n";
     actor->performAction(*target);
+
 
     // TC-14: Check win/loss condition
     if (!m_teamA->hasAliveCharacters()) {
@@ -225,12 +231,8 @@ void BattleEngine::displayBattleStatus() const {
         for (const auto* c : m_teamA->getMembers()) {
             if (!c) continue;
             std::cout << "  - [" << c->getId() << "] " << c->getName() 
-                      << " (HP: " << c->getCurrentHp() << "/" << c->getMaxHp();
-            if (c->getType() == CharacterType::MAGE) {
-                const auto* mage = static_cast<const Mage*>(c);
-                std::cout << ", Mana: " << mage->getCurrentMana() << "/" << mage->getMaxMana();
-            }
-            std::cout << ") " << (c->isAlive() ? "[ALIVE]" : "[DEFEATED]") << "\n";
+                      << " (" << c->getStatsString() << ") " 
+                      << (c->isAlive() ? "[ALIVE]" : "[DEFEATED]") << "\n";
         }
     }
 
@@ -239,14 +241,11 @@ void BattleEngine::displayBattleStatus() const {
         for (const auto* c : m_teamB->getMembers()) {
             if (!c) continue;
             std::cout << "  - [" << c->getId() << "] " << c->getName() 
-                      << " (HP: " << c->getCurrentHp() << "/" << c->getMaxHp();
-            if (c->getType() == CharacterType::MAGE) {
-                const auto* mage = static_cast<const Mage*>(c);
-                std::cout << ", Mana: " << mage->getCurrentMana() << "/" << mage->getMaxMana();
-            }
-            std::cout << ") " << (c->isAlive() ? "[ALIVE]" : "[DEFEATED]") << "\n";
+                      << " (" << c->getStatsString() << ") " 
+                      << (c->isAlive() ? "[ALIVE]" : "[DEFEATED]") << "\n";
         }
     }
+
 
     if (m_state == BattleState::IN_PROGRESS) {
         const Team* team = getCurrentActorTeam();
