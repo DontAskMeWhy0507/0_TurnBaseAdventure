@@ -40,3 +40,14 @@ else()
     target_compile_options(test_battle_engine PRIVATE -Wall -Wextra -pedantic)
 endif()
 
+# Team module tests (Hoang Tung Duong) — plain assert-style harness, no
+# external framework required.
+enable_testing()
+add_executable(team_tests
+    tests/team_tests.cpp
+    src/Team.cpp
+    src/TeamManager.cpp
+    src/TeamPersistence.cpp
+)
+target_include_directories(team_tests PRIVATE include)
+add_test(NAME team_tests COMMAND team_tests)
