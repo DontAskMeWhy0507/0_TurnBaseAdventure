@@ -1,7 +1,49 @@
 #include "MenuController.hpp"
 #include "InputHandler.hpp"
+#include "ICharacterExistenceChecker.hpp"
+#include "TeamManager.hpp"
+#include "TeamPersistence.hpp"
 
 #include <iostream>
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+namespace {
+
+const char* teamErrorToString(TeamError err) {
+    switch (err) {
+        case TeamError::None:                  return "Success";
+        case TeamError::InvalidId:             return "Team ID must be a positive integer";
+        case TeamError::DuplicateId:           return "Team ID already exists";
+        case TeamError::EmptyName:             return "Team name cannot be empty";
+        case TeamError::DuplicateName:         return "Team name already used by another team";
+        case TeamError::TeamNotFound:          return "Team not found";
+        case TeamError::CharacterNotInRoster:  return "Character does not exist in the roster";
+        case TeamError::DuplicateMember:       return "Character is already a member of this team";
+        case TeamError::TeamFull:              return "Team is full (maximum 5 members)";
+        case TeamError::MemberNotInTeam:       return "Character is not a member of this team";
+    }
+    return "Unknown error";
+}
+
+/// Placeholder existence checker: lets any character ID through.
+/// Replace with a real CharacterRoster when Member-3 delivers it.
+class AllowAllExistenceChecker : public ICharacterExistenceChecker {
+public:
+    bool characterExists(int /*characterId*/) const override { return true; }
+};
+
+} // namespace
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Dependency Injection
+// ─────────────────────────────────────────────────────────────────────────────
+
+void MenuController::setTeamManager(TeamManager* mgr) {
+    m_teamManager = mgr;
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  Main Menu
@@ -126,27 +168,150 @@ void MenuController::showTeamMenu() {
 }
 
 void MenuController::showTeamCreate() {
-    std::cout << "\n  [TODO] Create Team — waiting for Member-3 (TeamManager).\n";
+    std::cout << "\n  --- Create New Team ---\n";
+    if (m_teamManager == nullptr) {
+        std::cout << "  [ERROR] TeamManager not available yet.\n";
+        InputHandler::pause();
+        return;
+    }
+
+    int teamId = InputHandler::getInt("  Enter Team ID (positive integer): ", 1, 2147483647);
+    std::string teamName = InputHandler::getString("  Enter Team Name: ", false);
+
+    TeamError result = m_teamManager->createTeam(teamId, teamName);
+    if (result == TeamError::None) {
+        std::cout << "  [OK] Team '" << teamName << "' (ID: " << teamId << ") created.\n";
+    } else {
+        std::cout << "  [ERROR] " << teamErrorToString(result) << ".\n";
+    }
     InputHandler::pause();
 }
 
 void MenuController::showTeamDelete() {
-    std::cout << "\n  [TODO] Delete Team — waiting for Member-3 (TeamManager).\n";
+    std::cout << "\n  --- Delete Team ---\n";
+    if (m_teamManager == nullptr) {
+        std::cout << "  [ERROR] TeamManager not available yet.\n";
+        InputHandler::pause();
+        return;
+    }
+
+    int teamId = InputHandler::getInt("  Enter Team ID to delete: ", 1, 2147483647);
+    const Team* team = m_teamManager->findTeamById(teamId);
+    if (team == nullptr) {
+        std::cout << "  [ERROR] Team not found.\n";
+        InputHandler::pause();
+        return;
+    }
+
+    bool confirm = InputHandler::getYesNo("  Delete team '" + team->name() + "'?");
+    if (!confirm) {
+        std::cout << "  Cancelled.\n";
+        InputHandler::pause();
+        return;
+    }
+
+    TeamError result = m_teamManager->deleteTeam(teamId);
+    if (result == TeamError::None) {
+        std::cout << "  [OK] Team deleted.\n";
+    } else {
+        std::cout << "  [ERROR] " << teamErrorToString(result) << ".\n";
+    }
     InputHandler::pause();
 }
 
 void MenuController::showTeamAddMember() {
-    std::cout << "\n  [TODO] Add Member to Team — waiting for Member-3 (TeamManager).\n";
+    std::cout << "\n  --- Add Member to Team ---\n";
+    if (m_teamManager == nullptr) {
+        std::cout << "  [ERROR] TeamManager not available yet.\n";
+        InputHandler::pause();
+        return;
+    }
+
+    int teamId = InputHandler::getInt("  Enter Team ID: ", 1, 2147483647);
+    if (!m_teamManager->hasTeam(teamId)) {
+        std::cout << "  [ERROR] Team not found.\n";
+        InputHandler::pause();
+        return;
+    }
+
+    const Team* team = m_teamManager->findTeamById(teamId);
+    if (team->isFull()) {
+        std::cout << "  [ERROR] Team is already full (max 5 members).\n";
+        InputHandler::pause();
+        return;
+    }
+
+    int characterId = InputHandler::getInt("  Enter Character ID to add: ", 1, 2147483647);
+
+    AllowAllExistenceChecker checker;
+    TeamError result = m_teamManager->addCharacterToTeam(teamId, characterId, checker);
+    if (result == TeamError::None) {
+        std::cout << "  [OK] Character " << characterId << " added to team '" << team->name() << "'.\n";
+    } else {
+        std::cout << "  [ERROR] " << teamErrorToString(result) << ".\n";
+    }
     InputHandler::pause();
 }
 
 void MenuController::showTeamRemoveMember() {
-    std::cout << "\n  [TODO] Remove Member from Team — waiting for Member-3 (TeamManager).\n";
+    std::cout << "\n  --- Remove Member from Team ---\n";
+    if (m_teamManager == nullptr) {
+        std::cout << "  [ERROR] TeamManager not available yet.\n";
+        InputHandler::pause();
+        return;
+    }
+
+    int teamId = InputHandler::getInt("  Enter Team ID: ", 1, 2147483647);
+    const Team* team = m_teamManager->findTeamById(teamId);
+    if (team == nullptr) {
+        std::cout << "  [ERROR] Team not found.\n";
+        InputHandler::pause();
+        return;
+    }
+
+    if (team->isEmpty()) {
+        std::cout << "  Team '" << team->name() << "' has no members.\n";
+        InputHandler::pause();
+        return;
+    }
+
+    int characterId = InputHandler::getInt("  Enter Character ID to remove: ", 1, 2147483647);
+
+    TeamError result = m_teamManager->removeCharacterFromTeam(teamId, characterId);
+    if (result == TeamError::None) {
+        std::cout << "  [OK] Character " << characterId << " removed from team '" << team->name() << "'.\n";
+    } else {
+        std::cout << "  [ERROR] " << teamErrorToString(result) << ".\n";
+    }
     InputHandler::pause();
 }
 
 void MenuController::showTeamList() {
-    std::cout << "\n  [TODO] List All Teams — waiting for Member-3 (TeamManager).\n";
+    std::cout << "\n  --- All Teams ---\n";
+    if (m_teamManager == nullptr) {
+        std::cout << "  [ERROR] TeamManager not available yet.\n";
+        InputHandler::pause();
+        return;
+    }
+
+    const std::vector<Team>& teams = m_teamManager->teams();
+    if (teams.empty()) {
+        std::cout << "  No teams exist yet.\n";
+    } else {
+        for (const Team& team : teams) {
+            std::cout << "  Team #" << team.id() << " | " << team.name()
+                      << " | " << team.memberCount() << " member(s)";
+            const std::vector<int>& ids = team.memberIds();
+            if (!ids.empty()) {
+                std::cout << " | IDs: ";
+                for (std::size_t i = 0; i < ids.size(); ++i) {
+                    if (i > 0) std::cout << ", ";
+                    std::cout << ids[i];
+                }
+            }
+            std::cout << '\n';
+        }
+    }
     InputHandler::pause();
 }
 
@@ -200,11 +365,47 @@ void MenuController::showSaveLoadMenu() {
 }
 
 void MenuController::showSave() {
-    std::cout << "\n  [TODO] Save All Data — waiting for Member-4 (PersistenceManager).\n";
+    std::cout << "\n  --- Save All Data ---\n";
+    if (m_teamManager == nullptr) {
+        std::cout << "  [ERROR] TeamManager not available yet.\n";
+        InputHandler::pause();
+        return;
+    }
+
+    if (TeamPersistence::saveTeams("data/teams.txt", *m_teamManager)) {
+        std::cout << "  [OK] Team data saved successfully.\n";
+    } else {
+        std::cout << "  [ERROR] Failed to save team data.\n";
+    }
     InputHandler::pause();
 }
 
 void MenuController::showLoad() {
-    std::cout << "\n  [TODO] Load All Data — waiting for Member-4 (PersistenceManager).\n";
+    std::cout << "\n  --- Load All Data ---\n";
+    if (m_teamManager == nullptr) {
+        std::cout << "  [ERROR] TeamManager not available yet.\n";
+        InputHandler::pause();
+        return;
+    }
+
+    std::cout << "  This will reload team data from file and discard\n"
+              << "  any unsaved changes. Continue?\n";
+    if (!InputHandler::getYesNo("  Reload")) {
+        return;
+    }
+
+    // Collect and delete all current teams before reloading
+    std::vector<int> idsToDelete;
+    for (const Team& t : m_teamManager->teams()) {
+        idsToDelete.push_back(t.id());
+    }
+    for (int id : idsToDelete) {
+        m_teamManager->deleteTeam(id);
+    }
+
+    TeamPersistence::loadTeams("data/teams.txt", *m_teamManager);
+
+    std::cout << "  [OK] Team data reloaded. " << m_teamManager->teams().size()
+              << " teams loaded.\n";
     InputHandler::pause();
 }

@@ -1,4 +1,5 @@
 #include "GameApp.hpp"
+#include "TeamPersistence.hpp"
 
 #include <iostream>
 
@@ -14,12 +15,11 @@ GameApp::~GameApp() {
 bool GameApp::init() {
     std::cout << "[GameApp] Initializing..." << std::endl;
 
-    // TODO: When modules are ready, instantiate managers here:
-    //   m_roster    = new CharacterRoster();
-    //   m_teamMgr   = new TeamManager(m_roster);
-    //   m_fileMgr   = new PersistenceManager();
-    //   m_battle    = new BattleEngine(m_roster);
-    // And pass them to m_menu (e.g. m_menu.setDependencies(...))
+    // Load persisted teams (data/teams.txt); non-fatal if the file doesn't exist.
+    TeamPersistence::loadTeams("data/teams.txt", m_teamManager);
+
+    // Inject managers into MenuController
+    m_menu.setTeamManager(&m_teamManager);
 
     std::cout << "[GameApp] Init complete." << std::endl;
     return true;
@@ -40,7 +40,8 @@ void GameApp::shutdown() {
         m_running = false;
     }
 
-    // TODO: delete owned manager instances when modules arrive.
+    // Persist current team state before exit
+    TeamPersistence::saveTeams("data/teams.txt", m_teamManager);
 
     std::cout << "[GameApp] Shutdown complete." << std::endl;
 }
