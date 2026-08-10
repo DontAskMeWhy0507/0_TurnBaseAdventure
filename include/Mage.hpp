@@ -16,6 +16,13 @@ private:
 public:
     Mage(int id, const std::string& name, int maxHp, int maxMana, int spellDamage, int manaCost, int fallbackDamage);
 
+    // Getters for file I/O
+    int getMaxMana() const;
+    int getCurrentMana() const;
+    int getSpellDamage() const;
+    int getManaCost() const;
+    int getFallbackDamage() const;
+
     void resetSession() override;
     void performAction(Character& target) override;
 };

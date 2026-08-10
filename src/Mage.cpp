@@ -5,6 +5,26 @@ Mage::Mage(int id, const std::string& name, int maxHp, int maxMana, int spellDam
     : Character(id, name, maxHp, "MAGE"), maxMana(maxMana), currentMana(maxMana),
       spellDamage(spellDamage), manaCost(manaCost), fallbackDamage(fallbackDamage) {}
 
+int Mage::getMaxMana() const {
+    return maxMana;
+}
+
+int Mage::getCurrentMana() const {
+    return currentMana;
+}
+
+int Mage::getSpellDamage() const {
+    return spellDamage;
+}
+
+int Mage::getManaCost() const {
+    return manaCost;
+}
+
+int Mage::getFallbackDamage() const {
+    return fallbackDamage;
+}
+
 bool Mage::hasEnoughMana() const {
     return currentMana >= manaCost;
 }
