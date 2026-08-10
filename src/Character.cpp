@@ -1,30 +1,21 @@
-#include "../include/Character.hpp"
+#include "Character.h"
+#include <iostream>
 
-Character::Character(int id, const std::string& name, int maxHp, const std::string& type)
-    : id(id), name(name), maxHp(maxHp), currentHp(maxHp), type(type) {}
+void Warrior::performAction(Character& target) {
+    std::cout << "[Warrior Action] " << m_name << " attacks " << target.getName()
+              << " for " << m_attackPower << " damage!\n";
+    target.takeDamage(m_attackPower);
+}
 
-int Character::getId() const { return id; }
-const std::string& Character::getName() const { return name; }
-int Character::getMaxHp() const { return maxHp; }
-int Character::getCurrentHp() const { return currentHp; }
-const std::string& Character::getType() const { return type; }
-bool Character::isAlive() const { return currentHp > 0; }
-
-void Character::setCurrentHp(int hp) {
-    if (hp < 0) {
-        currentHp = 0;
-    } else if (hp > maxHp) {
-        currentHp = maxHp;
+void Mage::performAction(Character& target) {
+    if (m_currentMana >= m_manaCost) {
+        m_currentMana -= m_manaCost;
+        std::cout << "[Mage Spell] " << m_name << " casts spell on " << target.getName()
+                  << " for " << m_spellDamage << " damage! (Mana left: " << m_currentMana << ")\n";
+        target.takeDamage(m_spellDamage);
     } else {
-        currentHp = hp;
+        std::cout << "[Mage Fallback] " << m_name << " strikes " << target.getName()
+                  << " for fallback " << m_fallbackDamage << " damage! (Mana left: " << m_currentMana << ")\n";
+        target.takeDamage(m_fallbackDamage);
     }
-}
-
-void Character::takeDamage(int damage) {
-    if (damage < 0) return; // Không nhận sát thương âm
-    setCurrentHp(currentHp - damage);
-}
-
-void Character::resetSession() {
-    setCurrentHp(maxHp); // Khi bắt đầu trận, HP reset về max[cite: 1]
 }

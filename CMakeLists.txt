@@ -28,16 +28,26 @@ else()
     target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -pedantic)
 endif()
 
-# Optional: Tests (manual test executable)
-add_executable(test_oop
-    tests/test_oop.cpp
+# Test executable for BattleEngine
+add_executable(test_battle_engine
+    tests/test_battle_engine.cpp
     ${SOURCES}
 )
-
-target_include_directories(test_oop PRIVATE include)
-
+target_include_directories(test_battle_engine PRIVATE include)
 if(MSVC)
-    target_compile_options(test_oop PRIVATE /W4)
+    target_compile_options(test_battle_engine PRIVATE /W4)
 else()
-    target_compile_options(test_oop PRIVATE -Wall -Wextra -pedantic)
+    target_compile_options(test_battle_engine PRIVATE -Wall -Wextra -pedantic)
 endif()
+
+# Team module tests (Hoang Tung Duong) — plain assert-style harness, no
+# external framework required.
+enable_testing()
+add_executable(team_tests
+    tests/team_tests.cpp
+    src/Team.cpp
+    src/TeamManager.cpp
+    src/TeamPersistence.cpp
+)
+target_include_directories(team_tests PRIVATE include)
+add_test(NAME team_tests COMMAND team_tests)
