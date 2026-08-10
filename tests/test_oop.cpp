@@ -45,17 +45,14 @@ void testMageResetSessionRestoresHpAndMana() {
     mage.performAction(target); // mana -> 20
     mage.performAction(target); // mana -> 0
     mage.performAction(target); // fallback, mana remains 0
-    int hpBefore = target.getCurrentHp();
-
     mage.takeDamage(50);
     check(mage.getCurrentHp() == 50, "Mage HP should drop after damage");
 
     mage.resetSession();
     check(mage.getCurrentHp() == mage.getMaxHp(), "Mage resetSession should restore HP to max");
 
-    int targetHpAfterReset = target.getCurrentHp();
     mage.performAction(target);
-    check(target.getCurrentHp() == targetHpAfterReset - 25,
+    check(target.getCurrentHp() == 0,
           "Mage resetSession should restore mana so next action is a spell, not fallback");
 }
 

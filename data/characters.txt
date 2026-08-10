@@ -1,0 +1,7 @@
+# Turn-Based Adventure Game - Character Roster
+# Format: TYPE,id,name,maxHp,param1,param2,...
+#
+WARRIOR,101,Ares,100,30
+MAGE,102,Luna,80,10,40,10,10
+WARRIOR,103,Thor,100,25
+WARRIOR,104,Atlas,100,20

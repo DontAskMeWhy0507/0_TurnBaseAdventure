@@ -51,3 +51,35 @@ add_executable(team_tests
 )
 target_include_directories(team_tests PRIVATE include)
 add_test(NAME team_tests COMMAND team_tests)
+
+add_test(NAME battle_engine_tests COMMAND test_battle_engine)
+
+add_executable(oop_tests
+    tests/test_oop.cpp
+    src/Character.cpp
+)
+target_include_directories(oop_tests PRIVATE include)
+if(MSVC)
+    target_compile_options(oop_tests PRIVATE /W4)
+else()
+    target_compile_options(oop_tests PRIVATE -Wall -Wextra -pedantic)
+endif()
+add_test(NAME oop_tests COMMAND oop_tests)
+
+add_executable(acceptance_tests
+    tests/test_acceptance.cpp
+    src/Character.cpp
+    src/CharacterRoster.cpp
+    src/InputHandler.cpp
+    src/Team.cpp
+    src/TeamManager.cpp
+    src/TeamPersistence.cpp
+    src/BattleEngine.cpp
+)
+target_include_directories(acceptance_tests PRIVATE include)
+if(MSVC)
+    target_compile_options(acceptance_tests PRIVATE /W4)
+else()
+    target_compile_options(acceptance_tests PRIVATE -Wall -Wextra -pedantic)
+endif()
+add_test(NAME acceptance_tests COMMAND acceptance_tests)

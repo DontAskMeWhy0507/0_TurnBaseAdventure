@@ -3,6 +3,8 @@
 
 #include "MenuController.hpp"
 #include "TeamManager.hpp"
+#include "CharacterRoster.hpp"
+#include "BattleEngine.h"
 
 constexpr const char* GAME_VERSION = "0.1.0";
 
@@ -35,7 +37,10 @@ public:
 
 private:
     bool            m_running;
+    bool            m_shutdownComplete;
     TeamManager     m_teamManager;
+    CharacterRoster m_roster;
+    BattleEngine    m_battleEngine;
     MenuController  m_menu;
 };
 

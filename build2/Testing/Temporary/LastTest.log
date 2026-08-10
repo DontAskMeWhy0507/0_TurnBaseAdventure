@@ -1,0 +1,331 @@
+Start testing: Aug 10 14:07 SE Asia Standard Time
+----------------------------------------------------------
+1/4 Testing: team_tests
+1/4 Test: team_tests
+Command: "F:/0_TurnBaseAdventure/build2/team_tests.exe"
+Directory: F:/0_TurnBaseAdventure/build2
+"team_tests" start time: Aug 10 14:07 SE Asia Standard Time
+Output:
+----------------------------------------------------------
+Running Team module tests (Hoang Tung Duong)
+
+== TeamManager::createTeam validation ==
+  [PASS] valid team is created
+  [PASS] duplicate teamId is rejected (TC-04-style)
+  [PASS] duplicate teamName is rejected
+  [PASS] non-positive teamId is rejected
+  [PASS] empty teamName is rejected
+  [PASS] rejected creates did not mutate the collection
+
+== TeamManager membership rules (maps to TC-04) ==
+  [PASS] adding to a non-existent team is rejected
+  [PASS] adding an id not present in the roster is rejected
+  [PASS] add member 101
+  [PASS] duplicate member in the same team is rejected
+  [PASS] team now has 5 members
+  [PASS] 6th member is rejected (5-member limit)
+  [PASS] members are kept in insertion order
+  [PASS] removing an id not in the team is rejected
+  [PASS] remove member 103
+  [PASS] 103 is no longer a member
+
+== TeamManager::removeCharacterFromAllTeams (TC-05) ==
+  [PASS] 101 removed from Red Team
+  [PASS] 101 removed from Blue Team
+  [PASS] unrelated member 102 untouched
+
+== TeamManager::renameTeam / deleteTeam ==
+  [PASS] rename missing team rejected
+  [PASS] rename to empty name rejected
+  [PASS] rename to an existing name rejected
+  [PASS] valid rename succeeds
+  [PASS] new name is stored
+  [PASS] delete missing team rejected
+  [PASS] delete existing team succeeds
+  [PASS] deleted team no longer found
+
+== TeamPersistence save -> load round trip ==
+  [PASS] save succeeds
+  [PASS] load succeeds
+  [PASS] both teams reloaded
+  [PASS] Red Team reloaded with correct name
+  [PASS] Red Team members reloaded in original order
+
+== TeamPersistence robustness (malformed lines / missing file) ==
+[TeamPersistence] Skipping teams.txt line 2: expected 3 fields (teamId|teamName|ids), got 1
+[TeamPersistence] Skipping teams.txt line 3: teamId 'abc' is not a positive integer
+[TeamPersistence] Skipping teams.txt line 4: teamName is empty
+  [PASS] loadTeams does not crash / fail on malformed lines
+  [PASS] only the 2 well-formed lines produced teams
+  [PASS] well-formed Red Team line loaded
+  [PASS] team with an empty member list loads as an empty team
+[TeamPersistence] this_file_does_not_exist.txt not found — starting with an empty Team list.
+  [PASS] loading a missing file returns success (starts empty, no crash)
+  [PASS] manager stays empty when file is missing
+
+38 checks, 0 failed
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"team_tests" end time: Aug 10 14:07 SE Asia Standard Time
+"team_tests" time elapsed: 00:00:00
+----------------------------------------------------------
+
+2/4 Testing: battle_engine_tests
+2/4 Test: battle_engine_tests
+Command: "F:/0_TurnBaseAdventure/build2/test_battle_engine.exe"
+Directory: F:/0_TurnBaseAdventure/build2
+"battle_engine_tests" start time: Aug 10 14:07 SE Asia Standard Time
+Output:
+----------------------------------------------------------
+==================================================
+    RUNNING BATTLE ENGINE AUTOMATED TEST SUITE    
+==================================================
+
+
+>>> [TC-06] Test empty team / same team setup
+[BattleEngine] Error: Teams must be distinct non-null objects.
+[BattleEngine] Error: Teams must not be empty and must contain alive characters.
+==> PASS: TC-06 Rejected properly, state remains READY.
+
+>>> [TC-07] Start battle with Red Team (Ares) vs Blue Team (Luna)
+[BattleEngine] Battle setup successful between 'Red Team' and 'Blue Team'. Status: READY.
+[BattleEngine] Battle Started! HP/Mana reset. Status: IN_PROGRESS.
+[BattleEngine] First turn belongs to: Ares (Red Team).
+==> PASS: TC-07 Battle started, HP/Mana reset, Ares has 1st turn.
+
+>>> [TC-08] Select Luna action when it is Ares's turn
+[BattleEngine] Action rejected: It is not Luna's turn! Current actor: Ares.
+==> PASS: TC-08 Wrong turn action rejected properly.
+
+>>> [TC-09] Ares attacks Luna (Warrior performAction)
+
+--- TURN EXECUTION ---
+[Warrior Action] Ares attacks Luna for 30 damage!
+[BattleEngine] Turn complete. Next actor: Luna (Blue Team).
+==> PASS: TC-09 Luna HP is now 50. Warrior::performAction() executed.
+
+>>> [TC-10] Luna attacks Ares with spell (Mage performAction)
+
+--- TURN EXECUTION ---
+[Mage Spell] Luna casts spell on Ares for 40 damage! (Mana left: 0)
+[BattleEngine] Turn complete. Next actor: Ares (Red Team).
+==> PASS: TC-10 Ares HP is now 60, Luna mana is 0. Mage spell executed.
+
+>>> [TC-11] Testing Mage fallback damage when mana is 0
+
+--- TURN EXECUTION ---
+[Warrior Action] Ares attacks Luna for 30 damage!
+[BattleEngine] Turn complete. Next actor: Luna (Blue Team).
+
+--- TURN EXECUTION ---
+[Mage Fallback] Luna strikes Ares for fallback 10 damage! (Mana left: 0)
+[BattleEngine] Turn complete. Next actor: Ares (Red Team).
+==> PASS: TC-11 Ares HP reduced by fallback 10 (now 50), Luna mana remains 0.
+
+>>> [TC-12] Attempt to target a character with 0 HP
+
+--- TURN EXECUTION ---
+[Warrior Action] Ares attacks Luna for 30 damage!
+
+=========================================
+[BattleEngine] BATTLE FINISHED! Winner: Red Team
+=========================================
+[BattleEngine] Battle setup successful between 'Team X' and 'Team Y'. Status: READY.
+[BattleEngine] Battle Started! HP/Mana reset. Status: IN_PROGRESS.
+[BattleEngine] First turn belongs to: Hero (Team X).
+[BattleEngine] Action rejected: Target Dummy 1 is already defeated (HP=0).
+==> PASS: TC-12 Target with HP 0 rejected, turn not consumed.
+
+>>> [TC-13] Automatic skipping of defeated characters during turn rotation
+
+--- TURN EXECUTION ---
+[Warrior Action] Hero attacks Dummy 2 for 50 damage!
+[BattleEngine] Turn complete. Next actor: Dummy 2 (Team Y).
+==> PASS: TC-13 Defeated dummy1 skipped, active actor is dummy2.
+
+>>> [TC-14] Battle transition to FINISHED when team wiped out
+
+--- TURN EXECUTION ---
+[Warrior Action] Dummy 2 attacks Hero for 50 damage!
+[BattleEngine] Turn complete. Next actor: Hero (Team X).
+
+--- TURN EXECUTION ---
+[Warrior Action] Hero attacks Dummy 2 for 50 damage!
+
+=========================================
+[BattleEngine] BATTLE FINISHED! Winner: Team X
+=========================================
+==> PASS: TC-14 State is FINISHED, winning team is Team X.
+
+>>> [TC-15] Action called after Battle is FINISHED
+[BattleEngine] Action rejected: Battle is FINISHED.
+==> PASS: TC-15 Action after FINISHED rejected, state maintained.
+
+==================================================
+    ALL BATTLE ENGINE TEST CASES PASSED (100%)    
+==================================================
+<end of output>
+Test time =   0.08 sec
+----------------------------------------------------------
+Test Passed.
+"battle_engine_tests" end time: Aug 10 14:07 SE Asia Standard Time
+"battle_engine_tests" time elapsed: 00:00:00
+----------------------------------------------------------
+
+3/4 Testing: oop_tests
+3/4 Test: oop_tests
+Command: "F:/0_TurnBaseAdventure/build2/oop_tests.exe"
+Directory: F:/0_TurnBaseAdventure/build2
+"oop_tests" start time: Aug 10 14:07 SE Asia Standard Time
+Output:
+----------------------------------------------------------
+Running OOP tests...
+[Mage Spell] Merlin casts spell on Conan for 25 damage! (Mana left: 30)
+[Mage Spell] Merlin casts spell on Conan for 25 damage! (Mana left: 10)
+[Mage Fallback] Merlin strikes Conan for fallback 10 damage! (Mana left: 10)
+[Mage Spell] Merlin casts spell on Conan for 25 damage! (Mana left: 20)
+[Mage Spell] Merlin casts spell on Conan for 25 damage! (Mana left: 0)
+[Mage Fallback] Merlin strikes Conan for fallback 10 damage! (Mana left: 0)
+[Mage Spell] Merlin casts spell on Conan for 25 damage! (Mana left: 20)
+[Warrior Action] Conan attacks Gandalf for 30 damage!
+All OOP tests passed.
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"oop_tests" end time: Aug 10 14:07 SE Asia Standard Time
+"oop_tests" time elapsed: 00:00:00
+----------------------------------------------------------
+
+4/4 Testing: acceptance_tests
+4/4 Test: acceptance_tests
+Command: "F:/0_TurnBaseAdventure/build2/acceptance_tests.exe"
+Directory: F:/0_TurnBaseAdventure/build2
+"acceptance_tests" start time: Aug 10 14:07 SE Asia Standard Time
+Output:
+----------------------------------------------------------
+Loaded: WARRIOR - ID:1 Name:Ares
+Loaded: MAGE - ID:2 Name:Luna
+Loaded: WARRIOR - ID:3 Name:Thor
+Loaded: MAGE - ID:4 Name:Mira
+Loaded: WARRIOR - ID:5 Name:Atlas
+Warning: Skipped line 6: Unknown character type 'INVALID'
+Successfully loaded 5 characters from 'tc01_characters.txt'.
+TC-01 PASS
+Error: Character with ID 1 already exists.
+Error: Character data contains invalid stats.
+TC-02 PASS
+TC-03 PASS
+TC-04 PASS
+TC-05 PASS
+[BattleEngine] Error: Teams must be distinct non-null objects.
+[BattleEngine] Error: Teams must not be empty and must contain alive characters.
+TC-06 PASS
+[Mage Spell] Luna casts spell on Ares for 40 damage! (Mana left: 0)
+[BattleEngine] Battle setup successful between 'Red' and 'Blue'. Status: READY.
+[BattleEngine] Battle Started! HP/Mana reset. Status: IN_PROGRESS.
+[BattleEngine] First turn belongs to: Ares (Red).
+TC-07 PASS
+[BattleEngine] Battle setup successful between 'Red' and 'Blue'. Status: READY.
+[BattleEngine] Battle Started! HP/Mana reset. Status: IN_PROGRESS.
+[BattleEngine] First turn belongs to: Ares (Red).
+[BattleEngine] Action rejected: It is not Luna's turn! Current actor: Ares.
+TC-08 PASS
+[BattleEngine] Battle setup successful between 'Red' and 'Blue'. Status: READY.
+[BattleEngine] Battle Started! HP/Mana reset. Status: IN_PROGRESS.
+[BattleEngine] First turn belongs to: Ares (Red).
+
+--- TURN EXECUTION ---
+[Warrior Action] Ares attacks Luna for 30 damage!
+[BattleEngine] Turn complete. Next actor: Luna (Blue).
+TC-09 PASS
+[BattleEngine] Battle setup successful between 'Red' and 'Blue'. Status: READY.
+[BattleEngine] Battle Started! HP/Mana reset. Status: IN_PROGRESS.
+[BattleEngine] First turn belongs to: Ares (Red).
+
+--- TURN EXECUTION ---
+[Warrior Action] Ares attacks Luna for 30 damage!
+[BattleEngine] Turn complete. Next actor: Luna (Blue).
+
+--- TURN EXECUTION ---
+[Mage Spell] Luna casts spell on Ares for 40 damage! (Mana left: 0)
+[BattleEngine] Turn complete. Next actor: Ares (Red).
+TC-10 PASS
+[BattleEngine] Battle setup successful between 'Red' and 'Blue'. Status: READY.
+[BattleEngine] Battle Started! HP/Mana reset. Status: IN_PROGRESS.
+[BattleEngine] First turn belongs to: Ares (Red).
+
+--- TURN EXECUTION ---
+[Warrior Action] Ares attacks Luna for 30 damage!
+[BattleEngine] Turn complete. Next actor: Luna (Blue).
+
+--- TURN EXECUTION ---
+[Mage Spell] Luna casts spell on Ares for 40 damage! (Mana left: 0)
+[BattleEngine] Turn complete. Next actor: Ares (Red).
+
+--- TURN EXECUTION ---
+[Warrior Action] Ares attacks Luna for 30 damage!
+[BattleEngine] Turn complete. Next actor: Luna (Blue).
+
+--- TURN EXECUTION ---
+[Mage Fallback] Luna strikes Ares for fallback 10 damage! (Mana left: 0)
+[BattleEngine] Turn complete. Next actor: Ares (Red).
+TC-11 PASS
+[BattleEngine] Battle setup successful between 'Red' and 'Blue'. Status: READY.
+[BattleEngine] Battle Started! HP/Mana reset. Status: IN_PROGRESS.
+[BattleEngine] First turn belongs to: Ares (Red).
+[BattleEngine] Action rejected: Target Dead is already defeated (HP=0).
+[BattleEngine] Action rejected: Target must belong to the opposing team.
+TC-12 PASS
+[BattleEngine] Battle setup successful between 'X' and 'Y'. Status: READY.
+[BattleEngine] Battle Started! HP/Mana reset. Status: IN_PROGRESS.
+[BattleEngine] First turn belongs to: A (X).
+
+--- TURN EXECUTION ---
+[Warrior Action] A attacks Next for 50 damage!
+[BattleEngine] Turn complete. Next actor: Next (Y).
+TC-13 PASS
+[BattleEngine] Battle setup successful between 'X' and 'Y'. Status: READY.
+[BattleEngine] Battle Started! HP/Mana reset. Status: IN_PROGRESS.
+[BattleEngine] First turn belongs to: A (X).
+
+--- TURN EXECUTION ---
+[Warrior Action] A attacks B for 100 damage!
+
+=========================================
+[BattleEngine] BATTLE FINISHED! Winner: X
+=========================================
+TC-14 PASS
+[BattleEngine] Battle setup successful between 'X' and 'Y'. Status: READY.
+[BattleEngine] Battle Started! HP/Mana reset. Status: IN_PROGRESS.
+[BattleEngine] First turn belongs to: A (X).
+
+--- TURN EXECUTION ---
+[Warrior Action] A attacks B for 100 damage!
+
+=========================================
+[BattleEngine] BATTLE FINISHED! Winner: X
+=========================================
+[BattleEngine] Action rejected: Battle is FINISHED.
+TC-15 PASS
+Successfully saved 1 characters to 'tc16_chars.txt'.
+Loaded: WARRIOR - ID:101 Name:Ares Updated
+Successfully loaded 1 characters from 'tc16_chars.txt'.
+TC-16 PASS
+[CharacterRoster] missing_directory/characters.txt not found/readable; starting with an empty roster.
+Error: Cannot open file 'missing_directory/characters.txt' for writing.
+[TeamPersistence] missing_directory/teams.txt not found — starting with an empty Team list.
+TC-17 PASS
+TC-18 PASS
+ALL 18 ACCEPTANCE TESTS PASSED
+<end of output>
+Test time =   0.08 sec
+----------------------------------------------------------
+Test Passed.
+"acceptance_tests" end time: Aug 10 14:07 SE Asia Standard Time
+"acceptance_tests" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Aug 10 14:07 SE Asia Standard Time
