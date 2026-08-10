@@ -175,6 +175,21 @@ bool BattleEngine::executeTurn(Character* actor, Character* target) {
         return false;
     }
 
+    Team* opponentTeam = (m_currentTeamTurn == 0) ? m_teamB : m_teamA;
+    bool targetBelongsToOpponent = false;
+    if (opponentTeam) {
+        for (Character* member : opponentTeam->getMembers()) {
+            if (member == target) {
+                targetBelongsToOpponent = true;
+                break;
+            }
+        }
+    }
+    if (!targetBelongsToOpponent) {
+        std::cout << "[BattleEngine] Action rejected: Target must belong to the opposing team.\n";
+        return false;
+    }
+
     // =========================================================================
     // POLYMORPHISM INTEGRATION POINT (FR-04)
     // Calls virtual function performAction() via abstract base pointer 'actor'.

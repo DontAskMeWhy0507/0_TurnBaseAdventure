@@ -1,17 +1,4 @@
-#pragma once
-#include "Character.hpp"
-
-class Warrior : public Character {
-private:
-    const int attackPower;
-
-    void attack(Character& target);
-
-public:
-    Warrior(int id, const std::string& name, int maxHp, int attackPower);
-    
-    // Getter for attackPower (needed for file I/O)
-    int getAttackPower() const;
-    
-    void performAction(Character& target) override;
-};
+#ifndef TURN_BASE_ADVENTURE_WARRIOR_HPP
+#define TURN_BASE_ADVENTURE_WARRIOR_HPP
+#include "Character.h"
+#endif

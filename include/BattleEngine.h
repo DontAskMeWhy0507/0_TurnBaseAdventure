@@ -1,8 +1,7 @@
 #ifndef BATTLE_ENGINE_H
 #define BATTLE_ENGINE_H
 
-#include "Team.h"
-#include "Character.h"
+#include "Team.hpp"
 #include <iostream>
 #include <string>
 

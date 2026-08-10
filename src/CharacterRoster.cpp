@@ -116,6 +116,8 @@ std::unique_ptr<Character> parseCharacterLine(const std::string& line) {
 
 CharacterRoster::CharacterRoster() {}
 
+bool validCharacterStats(const Character* character);
+
 Character* CharacterRoster::findCharacterById(int id) {
     auto it = std::find_if(m_characters.begin(), m_characters.end(),
         [id](const std::unique_ptr<Character>& ch) {
@@ -138,18 +140,8 @@ bool CharacterRoster::addCharacter(std::unique_ptr<Character> character) {
         return false;
     }
 
-    if (character->getId() <= 0) {
-        std::cerr << "Error: Character ID must be positive.\n";
-        return false;
-    }
-
-    if (character->getName().empty()) {
-        std::cerr << "Error: Character name cannot be empty.\n";
-        return false;
-    }
-
-    if (character->getMaxHp() <= 0) {
-        std::cerr << "Error: Character max HP must be positive.\n";
+    if (!validCharacterStats(character.get())) {
+        std::cerr << "Error: Character data contains invalid stats.\n";
         return false;
     }
 
@@ -162,12 +154,63 @@ bool CharacterRoster::addCharacter(std::unique_ptr<Character> character) {
     return true;
 }
 
+bool validCharacterStats(const Character* character) {
+    if (!character || character->getId() <= 0 || character->getName().empty() ||
+        character->getMaxHp() <= 0) return false;
+    if (const Warrior* warrior = dynamic_cast<const Warrior*>(character))
+        return warrior->getAttackPower() > 0;
+    if (const Mage* mage = dynamic_cast<const Mage*>(character))
+        return mage->getMaxMana() > 0 && mage->getSpellDamage() > 0 &&
+               mage->getManaCost() > 0 && mage->getFallbackDamage() > 0;
+    return false;
+}
+
+std::string lowerCopy(const std::string& value) {
+    std::string result = value;
+    std::transform(result.begin(), result.end(), result.begin(),
+        [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+    return result;
+}
+
+bool CharacterRoster::replaceCharacter(std::unique_ptr<Character> character) {
+    if (!validCharacterStats(character.get())) {
+        return false;
+    }
+    for (auto& existing : m_characters) {
+        if (existing->getId() == character->getId()) {
+            existing = std::move(character);
+            return true;
+        }
+    }
+    return false;
+}
+
 Character* CharacterRoster::getCharacterById(int id) {
     return findCharacterById(id);
 }
 
 const Character* CharacterRoster::getCharacterById(int id) const {
     return findCharacterById(id);
+}
+
+std::vector<Character*> CharacterRoster::findByName(const std::string& query) {
+    std::vector<Character*> matches;
+    const std::string needle = lowerCopy(query);
+    for (auto& character : m_characters) {
+        if (lowerCopy(character->getName()).find(needle) != std::string::npos)
+            matches.push_back(character.get());
+    }
+    return matches;
+}
+
+std::vector<const Character*> CharacterRoster::findByName(const std::string& query) const {
+    std::vector<const Character*> matches;
+    const std::string needle = lowerCopy(query);
+    for (const auto& character : m_characters) {
+        if (lowerCopy(character->getName()).find(needle) != std::string::npos)
+            matches.push_back(character.get());
+    }
+    return matches;
 }
 
 const std::vector<std::unique_ptr<Character>>& CharacterRoster::getAllCharacters() const {
@@ -202,8 +245,10 @@ bool CharacterRoster::hasCharacter(int id) const {
 bool CharacterRoster::loadFromFile(const std::string& filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
-        std::cerr << "Error: Cannot open file '" << filename << "' for reading.\n";
-        return false;
+        std::cerr << "[CharacterRoster] " << filename
+                  << " not found/readable; starting with an empty roster.\n";
+        m_characters.clear();
+        return true;
     }
 
     CharacterRoster loadedRoster;
@@ -223,7 +268,7 @@ bool CharacterRoster::loadFromFile(const std::string& filename) {
             std::unique_ptr<Character> character = parseCharacterLine(cleanedLine);
             const int id = character->getId();
             const std::string name = character->getName();
-            const std::string type = character->getType();
+            const std::string type = character->getTypeName();
 
             if (loadedRoster.addCharacter(std::move(character))) {
                 std::cout << "Loaded: " << type << " - ID:" << id << " Name:" << name << "\n";
@@ -253,7 +298,7 @@ bool CharacterRoster::saveToFile(const std::string& filename) const {
     file << "#\n";
 
     for (const auto& character : m_characters) {
-        if (character->getType() == "WARRIOR") {
+        if (character->getTypeName() == std::string("WARRIOR")) {
             // Cast to Warrior to access attack power
             const Warrior* warrior = dynamic_cast<const Warrior*>(character.get());
             if (warrior) {
@@ -263,7 +308,7 @@ bool CharacterRoster::saveToFile(const std::string& filename) const {
                      << warrior->getAttackPower() << "\n";
             }
         }
-        else if (character->getType() == "MAGE") {
+        else if (character->getTypeName() == std::string("MAGE")) {
             // Cast to Mage to access mage-specific data
             const Mage* mage = dynamic_cast<const Mage*>(character.get());
             if (mage) {

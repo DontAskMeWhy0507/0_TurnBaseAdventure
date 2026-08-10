@@ -2,6 +2,8 @@
 #define TURN_BASE_ADVENTURE_MENU_CONTROLLER_HPP
 
 class TeamManager;
+class CharacterRoster;
+class BattleEngine;
 
 /**
  * Console-based menu system for the Turn-Based Adventure game.
@@ -21,6 +23,8 @@ public:
 
     /// Inject the TeamManager (called once during GameApp::init).
     void setTeamManager(TeamManager* mgr);
+    void setCharacterRoster(CharacterRoster* roster);
+    void setBattleEngine(BattleEngine* engine);
 
 private:
     // --- Main menu ---
@@ -40,6 +44,7 @@ private:
     void showRosterSearch();
 
     void showTeamCreate();
+    void showTeamRename();
     void showTeamDelete();
     void showTeamAddMember();
     void showTeamRemoveMember();
@@ -50,6 +55,8 @@ private:
     void showLoad();
 
     TeamManager* m_teamManager = nullptr;
+    CharacterRoster* m_roster = nullptr;
+    BattleEngine* m_battleEngine = nullptr;
 };
 
 #endif // TURN_BASE_ADVENTURE_MENU_CONTROLLER_HPP
