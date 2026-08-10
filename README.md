@@ -9,9 +9,19 @@ TurnBaseAdventure/
 ├── CMakeLists.txt      # Build configuration (CMake 3.10+, C++11)
 ├── main.cpp            # Application entry point
 ├── include/            # Public headers
-│   └── Game.hpp        # Core Game class
+│   ├── Character.hpp   # Base character interface
+│   ├── GameApp.hpp     # Main game application class
+│   ├── InputHandler.hpp# Input handling logic
+│   ├── Mage.hpp        # Mage character class
+│   ├── MenuController.hpp # Menu management
+│   └── Warrior.hpp     # Warrior character class
 ├── src/                # Source files
-│   └── Game.cpp        # Game implementation
+│   ├── Character.cpp   # Base character implementation
+│   ├── GameApp.cpp     # Game application implementation
+│   ├── InputHandler.cpp# Input handling implementation
+│   ├── Mage.cpp        # Mage behavior implementation
+│   ├── MenuController.cpp # Menu controller implementation
+│   └── Warrior.cpp     # Warrior behavior implementation
 ├── data/               # Runtime data & save files
 ├── tests/              # Unit tests
 └── README.md
@@ -41,6 +51,13 @@ cmake --build build --config Debug
 ```bash
 ./build/TurnBaseAdventure        # Linux/macOS
 .\build\Debug\TurnBaseAdventure  # Windows (MSVC)
+```
+
+## Test
+
+```bash
+./build/test_oop               # Linux/macOS
+.\build\Debug\test_oop.exe   # Windows (MSVC)
 ```
 
 ## Development Status
